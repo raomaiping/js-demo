@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Audio Visualization</title>
+    <style>
+        canvas {
+            width: 100%;
+            height: 300px;
+            background-color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <audio crossOrigin="anonymous" id="audio" src="./60056699027170018.mp3" controls></audio>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const audioElement = document.getElementById('audio');
+        class AudioVisualization {
+            constructor(audioElement) {
+                this.audioElement = audioElement
+                this.canvas = document.getElementById('canvas');
+                this.canvasContext = canvas.getContext('2d');
+                this.audioContext = null;
+                this.sourceNode = null;
+                this.analyserNode = null;
+                this.animationFrameId = null;
+                this.dataArray = null;
+                this.bufferLength = null;
+            }
+            stopDrawing() {
+                cancelAnimationFrame(this.animationFrameId);
+            }
+            play() {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.sourceNode = this.audioContext.createMediaElementSource(this.audioElement);
+                    this.analyserNode = this.audioContext.createAnalyser();
+                }
+
+                this.sourceNode.connect(this.analyserNode);
+                this.analyserNode.connect(this.audioContext.destination);
+                // 获取音频数据
+                this.bufferLength = this.analyserNode.frequencyBinCount;
+                this.dataArray = new Uint8Array(this.bufferLength);
+                this.draw();
+            }
+            draw() {
+                this.analyserNode.getByteFrequencyData(this.dataArray);
+                // 判断音频数据是否全部为0
+                const isAllZeros = this.dataArray.every(value => value === 0);
+                if (isAllZeros) {
+                    // 等待下一帧再尝试获取音频数据并绘制
+                    this.animationFrameId = requestAnimationFrame(this.draw.bind(this));
+                    return;
+                }
+
+                // 清空画布
+                this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 计算每个柱子的宽度和间隔
+                const barWidth = (this.canvas.width / this.bufferLength) * 2.5;
+                const barGap = barWidth + 2;
+
+                // 创建渐变色填充样式
+                const gradient = this.canvasContext.createLinearGradient(this.canvas.width / 2, 0, this.canvas.width / 2, this.canvas.height);
+                gradient.addColorStop(0, '#FF0000'); // 渐变色起始颜色（红色）
+                gradient.addColorStop(0.5, '#FFFF00'); // 渐变色中间颜色（黄色）
+                gradient.addColorStop(1, '#00FF00'); // 渐变色结束颜色（绿色）
+
+                // 绘制柱状图
+                let x = 0;
+                for (let i = 0; i < this.bufferLength; i++) {
+                    const barHeight = this.dataArray[i] / 2;
+                    this.canvasContext.fillStyle = gradient;
+                    this.canvasContext.fillRect(x, this.canvas.height - barHeight, barWidth, barHeight);
+                    x += barGap;
+                }
+
+                // 循环绘制
+                this.animationFrameId = requestAnimationFrame(this.draw.bind(this));
+            }
+        }
+
+        const audioVisualization = new AudioVisualization(audioElement)
+        audioElement.addEventListener('play', function () {
+            audioVisualization.play()
+        });
+
+        audioElement.addEventListener('pause', function () {
+            audioVisualization.stopDrawing();
+        });
+
+        audioElement.addEventListener('ended', function () {
+            audioVisualization.stopDrawing();
+        });
+    </script>
+</body>
+
+</html>
