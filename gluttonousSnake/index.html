@@ -35,6 +35,7 @@
 
 
     </div>
+    <img id="snakeImage" src="1.jpg" style="display: none;">
     <script>
 
         class GluttonousSnake {
@@ -73,6 +74,7 @@
 
             // 绘制贪吃蛇和食物
             draw() {
+                const snakeImage = document.getElementById("snakeImage");
                 // 清空画布
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -80,11 +82,13 @@
                 this.snake.forEach((segment) => {
                     this.ctx.fillStyle = "green";
                     this.ctx.fillRect(segment.x, segment.y, 10, 10);
+                    this.ctx.drawImage(snakeImage, segment.x, segment.y, 10, 10);
                 });
 
                 // 绘制食物
                 this.ctx.fillStyle = "red";
                 this.ctx.fillRect(this.food.x, this.food.y, 10, 10);
+                this.ctx.drawImage(snakeImage, this.food.x, this.food.y, 10, 10);
 
                 // 绘制得分
                 this.ctx.fillStyle = "black";
