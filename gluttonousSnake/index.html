@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>贪吃蛇游戏</title>
+    <style>
+        #canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="300" height="300"></canvas>
+
+    <script>
+
+        class GluttonousSnake {
+            constructor() {
+                this.canvas = document.getElementById("canvas");
+                this.ctx = this.canvas.getContext("2d");
+
+            }
+            initData() {
+                // 定义游戏是否结束的变量
+                this.isGameOver = false;
+                // 定义贪吃蛇的初始位置和大小
+                this.snake = [
+                    { x: 150, y: 150 },
+                    { x: 140, y: 150 },
+                    { x: 130, y: 150 },
+                    { x: 120, y: 150 },
+                ];
+
+                // 定义食物的初始位置
+                this.food = { x: 0, y: 0 };
+
+                // 定义贪吃蛇的移动方向
+                this.dx = 10;
+                this.dy = 0;
+
+                // 定义得分
+                this.score = 0;
+            }
+
+            // 生成随机位置的食物
+            createFood() {
+                this.food.x = Math.floor(Math.random() * (this.canvas.width / 10)) * 10;
+                this.food.y = Math.floor(Math.random() * (this.canvas.height / 10)) * 10;
+            }
+
+            // 绘制贪吃蛇和食物
+            draw() {
+                // 清空画布
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 绘制贪吃蛇
+                this.snake.forEach((segment) => {
+                    this.ctx.fillStyle = "green";
+                    this.ctx.fillRect(segment.x, segment.y, 10, 10);
+                });
+
+                // 绘制食物
+                this.ctx.fillStyle = "red";
+                this.ctx.fillRect(this.food.x, this.food.y, 10, 10);
+
+                // 绘制得分
+                this.ctx.fillStyle = "black";
+                this.ctx.font = "20px Arial";
+                this.ctx.fillText("得分: " + this.score, 10, 20);
+            }
+
+            // 更新贪吃蛇的位置
+            update() {
+                // 获取贪吃蛇头部的位置
+                const head = { x: this.snake[0].x + this.dx, y: this.snake[0].y + this.dy };
+
+                // 检测是否碰到边界
+                if (
+                    head.x < 0 ||
+                    head.x >= this.canvas.width ||
+                    head.y < 0 ||
+                    head.y >= this.canvas.height
+                ) {
+                    this.gameOver();
+                    return;
+                }
+
+                // 将新的头部位置添加到贪吃蛇数组的开头
+                this.snake.unshift(head);
+
+                // 如果贪吃蛇吃到了食物，则生成新的食物，增加得分，否则移除贪吃蛇的尾部
+                if (head.x === this.food.x && head.y === this.food.y) {
+                    this.createFood();
+                    this.score += 10;
+                } else {
+                    this.snake.pop();
+                }
+            }
+
+            // 游戏结束
+            gameOver() {
+                // 设置游戏结束的标志
+                this.isGameOver = true;
+
+                // 显示游戏结束的提示信息和得分
+                alert("游戏结束！得分：" + this.score);
+
+                // 显示重新游戏的按钮
+                const restartButton = document.createElement("button");
+                restartButton.textContent = "重新游戏";
+                restartButton.addEventListener("click", () => this.restartGame());
+                document.body.appendChild(restartButton);
+            }
+            // 重新游戏
+            restartGame() {
+                // 移除重新游戏的按钮
+                const restartButton = document.querySelector("button");
+                restartButton.remove();
+
+                this.initData()
+
+                // 开始游戏
+                this.createFood();
+                this.gameLoop();
+            }
+
+            // 游戏循环
+            gameLoop() {
+                // 检查游戏是否结束
+                if (this.isGameOver) {
+                    return;
+                }
+                // 更新贪吃蛇的位置
+                this.update();
+
+                // 绘制贪吃蛇和食物
+                this.draw();
+
+                // 每100毫秒执行一次游戏循环
+                setTimeout(() => this.gameLoop(), 100);
+            }
+
+            // 开始游戏
+            start() {
+                this.initData()
+                // 监听键盘事件，改变贪吃蛇的移动方向
+                document.addEventListener("keydown", (event) => {
+                    if (event.key === "ArrowUp" && this.dy !== 10) {
+                        this.dx = 0;
+                        this.dy = -10;
+                    } else if (event.key === "ArrowDown" && this.dy !== -10) {
+                        this.dx = 0;
+                        this.dy = 10;
+                    } else if (event.key === "ArrowLeft" && this.dx !== 10) {
+                        this.dx = -10;
+                        this.dy = 0;
+                    } else if (event.key === "ArrowRight" && this.dx !== -10) {
+                        this.dx = 10;
+                        this.dy = 0;
+                    }
+                });
+                this.createFood();
+                this.gameLoop();
+            }
+        }
+
+
+
+        new GluttonousSnake().start()
+
+
+
+
+    </script>
+
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
