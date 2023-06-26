@@ -7,12 +7,34 @@
         #canvas {
             border: 1px solid black;
         }
+
+        .restartButton {
+            width: 400px;
+            height: 100px;
+        }
+
+        button {
+            width: 200px;
+            height: 100px;
+        }
     </style>
 </head>
 
 <body>
-    <canvas id="canvas" width="300" height="300"></canvas>
+    <canvas id="canvas" width="900" height="600"></canvas>
+    <div style="display: flex;">
+        <button id="leftButton">左</button>
+        <div>
+            <div>
+                <button id="upButton">上</button>
+            </div>
+            <div> <button id="downButton">下</button> </div>
+        </div>
+        <button id="rightButton">右</button>
 
+
+
+    </div>
     <script>
 
         class GluttonousSnake {
@@ -109,13 +131,14 @@
                 // 显示重新游戏的按钮
                 const restartButton = document.createElement("button");
                 restartButton.textContent = "重新游戏";
+                restartButton.className = "restartButton"
                 restartButton.addEventListener("click", () => this.restartGame());
                 document.body.appendChild(restartButton);
             }
             // 重新游戏
             restartGame() {
                 // 移除重新游戏的按钮
-                const restartButton = document.querySelector("button");
+                const restartButton = document.querySelector(".restartButton");
                 restartButton.remove();
 
                 this.initData()
@@ -165,7 +188,32 @@
             }
         }
 
+        // 获取按钮元素
+        const upButton = document.getElementById("upButton");
+        const downButton = document.getElementById("downButton");
+        const leftButton = document.getElementById("leftButton");
+        const rightButton = document.getElementById("rightButton");
 
+        // 监听按钮点击事件，触发对应的键盘事件
+        upButton.addEventListener("click", () => {
+            const event = new KeyboardEvent("keydown", { key: "ArrowUp" });
+            document.dispatchEvent(event);
+        });
+
+        downButton.addEventListener("click", () => {
+            const event = new KeyboardEvent("keydown", { key: "ArrowDown" });
+            document.dispatchEvent(event);
+        });
+
+        leftButton.addEventListener("click", () => {
+            const event = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+            document.dispatchEvent(event);
+        });
+
+        rightButton.addEventListener("click", () => {
+            const event = new KeyboardEvent("keydown", { key: "ArrowRight" });
+            document.dispatchEvent(event);
+        });
 
         new GluttonousSnake().start()
 
