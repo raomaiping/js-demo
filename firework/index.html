@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>燃放烟花</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="fireworksCanvas"></canvas>
+
+    <script>
+        // 获取Canvas元素
+        const canvas = document.getElementById("fireworksCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // 设置Canvas的宽度和高度
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // 创建一个烟花对象
+        class Firework {
+            constructor(ctx) {
+                this.ctx = ctx;
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.color = getRandomColor();
+                this.radius = Math.random() * 10 + 5;
+                this.velocity = {
+                    x: Math.random() * 6 - 3,
+                    y: Math.random() * 5 + 5
+                };
+                this.gravity = 0.05;
+            }
+
+            // 更新烟花的位置和动画效果
+            update() {
+                this.x += this.velocity.x;
+                this.y -= this.velocity.y;
+                this.velocity.y -= this.gravity;
+
+                if (this.radius > 0) {
+                    this.radius -= 0.1;
+                }
+
+                if (this.radius <= 0) {
+                    this.radius = 0;
+                }
+            };
+
+            // 绘制烟花
+            draw() {
+                this.ctx.beginPath();
+                this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                this.ctx.fillStyle = this.color;
+                this.ctx.fill();
+            }
+        }
+
+
+
+        // 创建一个随机颜色
+        function getRandomColor() {
+            const letters = "0123456789ABCDEF";
+            let color = "#";
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // 存储烟花的数组
+        const fireworks = [];
+
+        // 创建烟花并将其添加到数组中
+        function createFirework() {
+            const firework = new Firework(ctx);
+            fireworks.push(firework);
+        }
+
+        // 更新和绘制烟花
+        function updateFireworks() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < fireworks.length; i++) {
+                fireworks[i].update();
+                fireworks[i].draw();
+
+                if (fireworks[i].radius <= 0) {
+                    fireworks.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(updateFireworks);
+        }
+
+        // 每隔一段时间创建一个新的烟花
+        setInterval(createFirework, 100);
+
+        // 开始更新和绘制烟花
+        updateFireworks();
+
+        // 获取鼠标点击的位置坐标
+        canvas.addEventListener("click", function (event) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            // 创建烟花并将其添加到数组中
+            const firework = new Firework(ctx);
+            firework.x = mouseX;
+            firework.y = mouseY;
+            fireworks.push(firework);
+        });
+
+    </script>
+</body>
+
+</html>
