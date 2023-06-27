@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>获取网页预览图</title>
+</head>
+<style>
+    html,
+    body {
+        height: 100%;
+    }
+
+    .loading {
+        position: relative;
+    }
+
+    .loading::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: translate(-50%, -50%) rotate(0deg);
+        }
+
+        100% {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+</style>
+
+<body>
+    请输入网址：<input id="input" type="text" value="http://map.raomaiping.host">
+    <button onclick="getScreenshot()">获取预览图</button>
+    <div id="screenshotContainer"></div>
+
+    <script>
+        function isURLWithProtocol(str) {
+            // 定义网址的正则表达式模式
+            const pattern = /^(https?:\/\/)/i;
+
+            // 使用正则表达式测试字符串
+            if (!pattern.test(str)) {
+                return false;
+            }
+
+            // 检查字符串是否是有效的URL
+            try {
+                new URL(str);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function getScreenshot() {
+
+            const input = document.getElementById("input");
+            const access_key = "0cd345181334d4690966328e024da9cb";
+            const url = input.value;
+            if (!isURLWithProtocol(url)) {
+                alert("请输入正确的网址")
+                return
+            }
+            const screenshotUrl = `http://api.screenshotlayer.com/api/capture?access_key=${access_key}&url=${url}&fullpage=1`
+            const img = document.createElement("img");
+            const htmlNode = document.documentElement;
+            img.src = screenshotUrl;
+            htmlNode.classList.add("loading"); // 添加loading类
+            img.onload = function () {
+                htmlNode.classList.remove("loading"); // 图片加载完成后移除loading类
+            }
+            const screenshotContainer = document.getElementById("screenshotContainer")
+            screenshotContainer.innerHTML = ""
+            screenshotContainer.appendChild(img);
+        }
+    </script>
+</body>
+
+
+</html>
