@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>分割并朗读段落</title>
+</head>
+<style>
+  p {
+    margin-bottom: 100px;
+  }
+
+  #text-to-read {
+    height: 400px;
+    overflow: auto
+  }
+</style>
+
+<body>
+  <div>
+    <!-- 将文本内容包裹在一个元素中，以便后面将其分割并朗读 -->
+    <div id="text-to-read">
+      <p>2020年</p>
+      <p>于世界</p>
+      <p>于国家。</p>
+      <p>于我自己而言</p>
+      <p>2020年，</p>
+      <p>2020年</p>
+      <p>于世界</p>
+      <p>于国家。</p>
+      <p>于我自己而言</p>
+      <p>2020年，</p>
+      <p>2020年</p>
+      <p>于世界</p>
+      <p>于国家。</p>
+      <p>于我自己而言</p>
+      <p>2020年，</p>
+      <p>2020年</p>
+      <p>于世界</p>
+      <p>于国家。</p>
+      <p>于我自己而言</p>
+      <p>2020年，</p>
+      <!-- 这里添加其他段落 -->
+    </div>
+    <button id="start-button">开始朗读</button>
+    <button id="stop-button">停止朗读</button>
+  </div>
+
+
+  <script>
+    const textToRead = document.getElementById("text-to-read");
+    const paragraphs = textToRead.querySelectorAll("p");
+    const audioElement = new Audio()
+    const audioElement1 = new Audio();
+    const startButton = document.getElementById("start-button");
+    const stopButton = document.getElementById("stop-button");
+    // 选中当前段落的文本
+    const selection = window.getSelection();
+    const range = document.createRange();
+
+    let currentParagraphIndex = 0;
+    let isReading = false;
+
+    // 函数用于朗读当前段落
+    function readCurrentParagraph () {
+      if (currentParagraphIndex < paragraphs.length) {
+        const paragraphText = paragraphs[currentParagraphIndex].textContent.trim();
+        if (paragraphText) {
+          const textToSpeechURL = createAudioUrl(paragraphText)
+          audioElement.src = textToSpeechURL;
+          audioElement1.removeEventListener("play", audioPlay)
+          audioElement1.removeEventListener("ended", audioEnded)
+          audioElement.addEventListener("play", audioPlay);
+          // 监听音频元素的ended事件
+          audioElement.addEventListener("ended", audioEnded);
+
+          audioElement.play();
+        }
+      } else {
+        // 所有段落都已经朗读完毕
+        isReading = false;
+      }
+    }
+
+
+    function createAudioUrl (text) {
+      return `https://dds.dui.ai/runtime/v1/synthesize?voiceId=qiumum_0gushi&text=${text}&speed=1&volume=50&audioType=wav`;
+    }
+    function audioPlay () {
+      const paragraph = paragraphs[currentParagraphIndex];
+      // 突出显示当前段落的文本
+      range.selectNodeContents(paragraph);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      paragraph.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' })
+      if (!isReading) return
+      const paragraphText = paragraphs[currentParagraphIndex + 1].textContent.trim();
+      const textToSpeechURL = createAudioUrl(paragraphText)
+      if (currentParagraphIndex % 2 === 1) {
+        audioElement.src = textToSpeechURL;
+      } else {
+        audioElement1.src = textToSpeechURL;
+      }
+    }
+    function audioEnded () {
+      selection.removeAllRanges();
+      if (!isReading) {
+        stopReading()
+        return
+      }
+      if (currentParagraphIndex % 2 === 1) {
+        audioElement1.removeEventListener("play", audioPlay)
+        audioElement1.removeEventListener("ended", audioEnded)
+        audioElement.addEventListener("play", audioPlay);
+        // 监听音频元素的ended事件
+        audioElement.addEventListener("ended", audioEnded);
+        audioElement.play();
+      } else {
+        audioElement.removeEventListener("play", audioPlay)
+        audioElement.removeEventListener("ended", audioEnded)
+        audioElement1.addEventListener("play", audioPlay);
+        // 监听音频元素的ended事件
+        audioElement1.addEventListener("ended", audioEnded);
+        audioElement1.play();
+      }
+      // 当前段落播放结束
+      currentParagraphIndex++;
+      if (currentParagraphIndex === paragraphs.length - 1) {
+        // 所有段落都已经朗读完毕
+        isReading = false;
+      }
+
+
+    }
+
+    // 函数用于开始朗读
+    function startReading () {
+      if (!isReading) {
+        currentParagraphIndex = 0;
+        isReading = true;
+        readCurrentParagraph();
+        startButton.disabled = true;
+        stopButton.disabled = false;
+      }
+    }
+
+    // 函数用于停止朗读
+    function stopReading () {
+      audioElement.pause();
+      isReading = false;
+      startButton.disabled = false;
+      stopButton.disabled = true;
+      selection.removeAllRanges();
+    }
+
+    startButton.addEventListener("click", startReading);
+    stopButton.addEventListener("click", stopReading);
+  </script>
+</body>
+
+</html>
